@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PSJR_FilePractice": {
+      "commandName": "Project",
+      "commandLineArgs": "--file C:\\Users\\ddu41894\\Desktop\\psdata\\in\\data1.txt"
+    }
+  }
+}
