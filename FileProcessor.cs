@@ -45,7 +45,7 @@ internal class FileProcessor
             WriteLine($"Creating in progress directory: {Path.Combine(psDataDir, InProgressDirectoryName)}");
             Directory.CreateDirectory(Path.Combine(psDataDir, InProgressDirectoryName));
         }
-        //MoveToInProgressDirectory(psDataDir);
+       MoveToInProgressDirectory(psDataDir);
         //determine filetype
         string extension = Path.GetExtension(InputFilePath);
         switch (extension)
@@ -66,12 +66,17 @@ internal class FileProcessor
         string completedfileName = $"{Guid.NewGuid()}_{fileNameCompletedExtension}";
         string completedFilePath = Path.Combine(completedDirectoryPath, completedfileName);
         File.Move(InputFilePath, completedFilePath);
+
+        //delete IP directory
+        string? inProgressDirectoryPath = Path.Combine(psDataDir,InProgressDirectoryName);
+        Directory.Delete(inProgressDirectoryPath!, true);//when this line of code executes it will delete the directory even if there are files inside
     }
     //move to IP dir
     private void MoveToInProgressDirectory(string psDataDir)
     {
         string fileNameMove = Path.Combine(psDataDir, InProgressDirectoryName, Path.GetFileName(InputFilePath));
         File.Move(InputFilePath, fileNameMove);
+        File.Move(fileNameMove, InputFilePath); 
     }
     private void ProcessTextFile(string inProgressFilePath)
     {
