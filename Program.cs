@@ -40,7 +40,21 @@ namespace PSJR_FilePractice
         }
         private static void ProcessDirectory(string directoryPath, string fileType)
         {
-            
+            switch (fileType) 
+            {
+                case "TEXT":
+                    string[] txtFiles = Directory.GetFiles(directoryPath, "*.txt");//overload of GetFiles method where we are searching a directory for a certain type of file
+                    foreach (string txtFile in txtFiles) 
+                    { 
+                        var fileProcessor = new FileProcessor(txtFile);
+                        fileProcessor.Process();
+                    }
+                    break;
+                default:
+                    WriteLine($"File type {fileType} not supported");
+                    break;
+            }
+
         }
 
        
