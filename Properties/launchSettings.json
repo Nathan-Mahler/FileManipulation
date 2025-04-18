@@ -2,7 +2,7 @@
   "profiles": {
     "PSJR_FilePractice": {
       "commandName": "Project",
-      "commandLineArgs": "--dir C:\\Users\\ddu41894\\Desktop\\psdata\\in TEXT"
+      "commandLineArgs": "C:\\Users\\ddu41894\\Desktop\\psdata\\in"
     }
   }
 }
