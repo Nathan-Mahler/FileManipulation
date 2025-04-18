@@ -37,7 +37,7 @@ namespace PSJR_FilePractice
 
         private static void WatcherError(object sender, ErrorEventArgs e)
         {
-            WriteLine($"Folder PS data in no longer being watched  with error: {e.GetException}");
+            WriteLine($"Folder PS data in no longer being watched  with error: {e.GetException()}");
         }
 
         private static void FileRenamed(object sender, RenamedEventArgs e)
