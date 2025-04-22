@@ -1,12 +1,14 @@
 ﻿using PSJR_FilePractice;
 using static System.Console;
 using System.Collections.Concurrent;
+using System.Runtime.Caching;
 
 namespace PSJR_FilePractice
 {
     internal class Program
     {
         public static ConcurrentDictionary<string, string> Files = new();
+        public static MemoryCache MemFiles = MemoryCache.Default;
         static void Main(string[] args)
         {
             WriteLine("Parsing command line options");
@@ -56,12 +58,14 @@ namespace PSJR_FilePractice
         {
             WriteLine($"File changed: {e.FullPath} - e type: {e.ChangeType}");
             Files.TryAdd(e.FullPath, e.FullPath);
+            AddToCache(e.FullPath);
         }
 
         private static void FileCreated(object sender, FileSystemEventArgs e)
         {
             WriteLine($"File created: {e.Name} - e type: {e.ChangeType}");
             Files.TryAdd(e.FullPath,e.FullPath);
+            AddToCache(e.FullPath);
         }
 
         private static void ProcessFiles(object stateInfo)
@@ -75,6 +79,15 @@ namespace PSJR_FilePractice
                 }
                 
             }
+        }
+        private static void AddToCache(string fullPath)
+        {
+            var item = new CacheItem(fullPath, fullPath);
+
+            var policy = new CacheItemPolicy
+            {
+                AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(1)
+            };
         }
     }
 }
