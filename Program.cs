@@ -20,6 +20,7 @@ namespace PSJR_FilePractice
                 ReadLine();
                 return;
             }
+            ProcessExistingFiles(directoryToWatch);
             WriteLine($"Watching directory: {directoryToWatch}");
             using FileSystemWatcher inputFileWatcher = new FileSystemWatcher(directoryToWatch);
             using var timer = new Timer(ProcessFiles, null, 0, 1000);
@@ -37,6 +38,17 @@ namespace PSJR_FilePractice
             inputFileWatcher.EnableRaisingEvents = true;
             WriteLine("Press enter to quit");
             ReadLine();
+        }
+
+        private static void ProcessExistingFiles(string inputDirectory)
+        {
+            WriteLine($"Checking existing files in {inputDirectory}");
+            foreach (var filePath in Directory.EnumerateFiles(inputDirectory))
+            {
+                var fileProcessor = new FileProcessor(filePath);
+                fileProcessor.Process();
+                //AddToCache(filePath); I could process the file this way as well
+            }
         }
 
         private static void WatcherError(object sender, ErrorEventArgs e)
@@ -86,8 +98,26 @@ namespace PSJR_FilePractice
 
             var policy = new CacheItemPolicy
             {
+                RemovedCallback = ProcessFileInAddToCache,
+                SlidingExpiration = TimeSpan.FromSeconds(2),
                 AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(1)
+
             };
+            MemFiles.Add(item, policy);
+        }
+
+        private static void ProcessFileInAddToCache(CacheEntryRemovedArguments arguments)
+        {
+            WriteLine($"File {arguments.CacheItem.Key} was removed from cache. Reason: {arguments.RemovedReason}");
+            if (arguments.RemovedReason == CacheEntryRemovedReason.Expired)
+            {
+                var fileProcessor = new FileProcessor(arguments.CacheItem.Key);
+                fileProcessor.Process();
+            }
+            else
+            {
+                WriteLine($"File {arguments.CacheItem.Key} was not processed because it was not expired.");
+            }
         }
     }
 }
