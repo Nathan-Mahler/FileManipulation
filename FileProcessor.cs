@@ -51,27 +51,32 @@ internal class FileProcessor
        MoveToInProgressDirectory(psDataDir);
         //determine filetype
         string extension = Path.GetExtension(InputFilePath);
-        switch (extension)
-        {
-            case ".txt":
-                ProcessTextFile(psDataDirIn);// in the video he uses inProgressFilePath, why do we need to use that?
-                break;
-            default:
-                WriteLine($"File type {extension} not supported");
-                break;
-        }
         //Move to Completed Directory from IP
-       
+
         string completedDirectoryPath = Path.Combine(psDataDir, CompletedDirectoryName);
         Directory.CreateDirectory(completedDirectoryPath);
         string fileNameCompletedExtension = Path.ChangeExtension(inputFileName, ".completed");
         string completedfileName = $"{Guid.NewGuid()}_{fileNameCompletedExtension}";
         string completedFilePath = Path.Combine(completedDirectoryPath, completedfileName);
-        File.Move(fileNameMove, completedFilePath);//moving from in progress to completed
+        //File.Move(fileNameMove, completedFilePath);//moving from in progress to completed
+        switch (extension)
+        {
+            case ".txt":
+                ProcessTextFile(psDataDirIn);// in the video he uses inProgressFilePath
+                var textFileProcessor = new TextFileProcessor(psDataDirIn, completedFilePath);
+                textFileProcessor.Process();
+                break;
+            default:
+                WriteLine($"File type {extension} not supported");
+                break;
+        }
+        WriteLine($"File {InputFilePath} processed");
 
         //delete IP directory
+
         string? inProgressDirectoryPath = Path.Combine(psDataDir,InProgressDirectoryName);
         Directory.Delete(inProgressDirectoryPath!, true);//when this line of code executes it will delete the directory even if there are files inside
+        WriteLine($"Deleting in progress directory: {inProgressDirectoryPath}");
     }
     //move to IP dir
     private string MoveToInProgressDirectory(string psDataDir)

@@ -1,12 +1,14 @@
 ﻿using PSJR_FilePractice;
 using static System.Console;
 using System.Collections.Concurrent;
+using System.Runtime.Caching;
 
 namespace PSJR_FilePractice
 {
     internal class Program
     {
         public static ConcurrentDictionary<string, string> Files = new();
+        public static MemoryCache MemFiles = MemoryCache.Default;
         static void Main(string[] args)
         {
             WriteLine("Parsing command line options");
@@ -18,6 +20,7 @@ namespace PSJR_FilePractice
                 ReadLine();
                 return;
             }
+            ProcessExistingFiles(directoryToWatch);
             WriteLine($"Watching directory: {directoryToWatch}");
             using FileSystemWatcher inputFileWatcher = new FileSystemWatcher(directoryToWatch);
             using var timer = new Timer(ProcessFiles, null, 0, 1000);
@@ -35,6 +38,17 @@ namespace PSJR_FilePractice
             inputFileWatcher.EnableRaisingEvents = true;
             WriteLine("Press enter to quit");
             ReadLine();
+        }
+
+        private static void ProcessExistingFiles(string inputDirectory)
+        {
+            WriteLine($"Checking existing files in {inputDirectory}");
+            foreach (var filePath in Directory.EnumerateFiles(inputDirectory))
+            {
+                var fileProcessor = new FileProcessor(filePath);
+                fileProcessor.Process();
+                //AddToCache(filePath); I could process the file this way as well
+            }
         }
 
         private static void WatcherError(object sender, ErrorEventArgs e)
@@ -56,12 +70,14 @@ namespace PSJR_FilePractice
         {
             WriteLine($"File changed: {e.FullPath} - e type: {e.ChangeType}");
             Files.TryAdd(e.FullPath, e.FullPath);
+            AddToCache(e.FullPath);
         }
 
         private static void FileCreated(object sender, FileSystemEventArgs e)
         {
             WriteLine($"File created: {e.Name} - e type: {e.ChangeType}");
             Files.TryAdd(e.FullPath,e.FullPath);
+            AddToCache(e.FullPath);
         }
 
         private static void ProcessFiles(object stateInfo)
@@ -74,6 +90,33 @@ namespace PSJR_FilePractice
                     fileProcessor.Process();
                 }
                 
+            }
+        }
+        private static void AddToCache(string fullPath)
+        {
+            var item = new CacheItem(fullPath, fullPath);
+
+            var policy = new CacheItemPolicy
+            {
+                RemovedCallback = ProcessFileInAddToCache,
+                SlidingExpiration = TimeSpan.FromSeconds(2),
+                AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(1)
+
+            };
+            MemFiles.Add(item, policy);
+        }
+
+        private static void ProcessFileInAddToCache(CacheEntryRemovedArguments arguments)
+        {
+            WriteLine($"File {arguments.CacheItem.Key} was removed from cache. Reason: {arguments.RemovedReason}");
+            if (arguments.RemovedReason == CacheEntryRemovedReason.Expired)
+            {
+                var fileProcessor = new FileProcessor(arguments.CacheItem.Key);
+                fileProcessor.Process();
+            }
+            else
+            {
+                WriteLine($"File {arguments.CacheItem.Key} was not processed because it was not expired.");
             }
         }
     }
