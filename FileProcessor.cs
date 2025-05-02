@@ -63,7 +63,7 @@ internal class FileProcessor
         {
             case ".txt":
                 ProcessTextFile(psDataDirIn);// in the video he uses inProgressFilePath
-                var textFileProcessor = new TextFileProcessor(psDataDirIn, completedFilePath);
+                var textFileProcessor = new TextFileProcessor(psDataDir, completedFilePath);
                 textFileProcessor.Process();
                 break;
             default:

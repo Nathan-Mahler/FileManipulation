@@ -21,7 +21,7 @@ namespace PSJR_FilePractice
                 return;
             }
             ProcessExistingFiles(directoryToWatch);
-            WriteLine($"Watching directory: {directoryToWatch}");
+            //WriteLine($"Watching directory: {directoryToWatch}");
             using FileSystemWatcher inputFileWatcher = new FileSystemWatcher(directoryToWatch);
             using var timer = new Timer(ProcessFiles, null, 0, 1000);
             inputFileWatcher.IncludeSubdirectories = false;
@@ -36,6 +36,7 @@ namespace PSJR_FilePractice
             inputFileWatcher.Error += WatcherError;
 
             inputFileWatcher.EnableRaisingEvents = true;
+            
             WriteLine("Press enter to quit");
             ReadLine();
         }
@@ -70,14 +71,14 @@ namespace PSJR_FilePractice
         {
             WriteLine($"File changed: {e.FullPath} - e type: {e.ChangeType}");
             Files.TryAdd(e.FullPath, e.FullPath);
-            AddToCache(e.FullPath);
+            //AddToCache(e.FullPath);
         }
 
         private static void FileCreated(object sender, FileSystemEventArgs e)
         {
             WriteLine($"File created: {e.Name} - e type: {e.ChangeType}");
             Files.TryAdd(e.FullPath,e.FullPath);
-            AddToCache(e.FullPath);
+            //AddToCache(e.FullPath);
         }
 
         private static void ProcessFiles(object stateInfo)
